@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback System - Demo Version</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Feedback System - Demo Version</h1>
+            <p>This is a demo version that works without PHP. Install XAMPP to use the full version with database storage.</p>
+        </header>
+        <main>
+            <form id="feedbackForm" class="feedback-form">
+                <div class="form-group">
+                    <label for="name">Name *</label>
+                    <input type="text" id="name" name="name" required>
+                    <span class="error-message" id="nameError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                    <span class="error-message" id="emailError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="rating">Rating *</label>
+                    <div class="rating-container">
+                        <div class="stars">
+                            <input type="radio" id="star5" name="rating" value="5">
+                            <label for="star5">★</label>
+                            <input type="radio" id="star4" name="rating" value="4">
+                            <label for="star4">★</label>
+                            <input type="radio" id="star3" name="rating" value="3">
+                            <label for="star3">★</label>
+                            <input type="radio" id="star2" name="rating" value="2">
+                            <label for="star2">★</label>
+                            <input type="radio" id="star1" name="rating" value="1">
+                            <label for="star1">★</label>
+                        </div>
+                        <span class="rating-text">Click to rate</span>
+                    </div>
+                    <span class="error-message" id="ratingError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="comments">Comments *</label>
+                    <textarea id="comments" name="comments" rows="5" required placeholder="Please share your feedback..."></textarea>
+                    <span class="error-message" id="commentsError"></span>
+                </div>
+                <div class="form-group">
+                    <button type="submit" id="submitBtn">Submit Feedback (Demo)</button>
+                </div>
+            </form>
+            <div id="successMessage" class="success-message" style="display: none;">
+                <h3>Demo Mode - No Data Saved</h3>
+                <p>This is a demo version. Your feedback would be saved in the full version with XAMPP.</p>
+                <div id="demoData" style="background: #f8f9fa; padding: 15px; margin: 15px 0; border-radius: 5px; font-family: monospace; font-size: 12px;"></div>
+                <button id="resetForm" class="reset-btn">Submit Another Feedback</button>
+            </div>
+            <div id="errorMessage" class="error-message" style="display: none;">
+                <h3>Error</h3>
+                <p id="errorText">Something went wrong. Please try again.</p>
+            </div>
+        </main>
+        <footer>
+            <p>&copy; 2024 Feedback System. All rights reserved.</p>
+            <p><strong>To use the full version:</strong> Install XAMPP and access <code>http://localhost/feedback_system/</code></p>
+        </footer>
+    </div>
+    <script>
+        // Demo version JavaScript
+        const feedbackForm = document.getElementById('feedbackForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const resetFormBtn = document.getElementById('resetForm');
+        const demoData = document.getElementById('demoData');
+
+        // Validation patterns
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const namePattern = /^[a-zA-Z\s]{2,50}$/;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeStarRating();
+            setupFormValidation();
+            setupFormSubmission();
+            setupResetForm();
+        });
+
+        function initializeStarRating() {
+            const stars = document.querySelectorAll('.stars input[type="radio"]');
+            const ratingText = document.querySelector('.rating-text');
+
+            stars.forEach(star => {
+                star.addEventListener('change', function() {
+                    const rating = this.value;
+                    ratingText.textContent = `${rating} star${rating > 1 ? 's' : ''}`;
+                });
+            });
+        }
+
+        function setupFormValidation() {
+            const inputs = feedbackForm.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateField(this);
+                });
+                input.addEventListener('input', function() {
+                    clearFieldError(this);
+                });
+            });
+        }
+
+        function validateField(field) {
+            const value = field.value.trim();
+            const fieldName = field.name;
+            let isValid = true;
+
+            switch(fieldName) {
+                case 'name':
+                    if (!namePattern.test(value)) {
+                        showFieldError(field, 'Name must be 2-50 characters, letters and spaces only');
+                        isValid = false;
+                    }
+                    break;
+                case 'email':
+                    if (!emailPattern.test(value)) {
+                        showFieldError(field, 'Please enter a valid email address');
+                        isValid = false;
+                    }
+                    break;
+                case 'rating':
+                    if (!value) {
+                        showFieldError(field, 'Please select a rating');
+                        isValid = false;
+                    }
+                    break;
+                case 'comments':
+                    if (value.length < 10) {
+                        showFieldError(field, 'Comments must be at least 10 characters');
+                        isValid = false;
+                    } else if (value.length > 1000) {
+                        showFieldError(field, 'Comments must be less than 1000 characters');
+                        isValid = false;
+                    }
+                    break;
+            }
+            return isValid;
+        }
+
+        function showFieldError(field, message) {
+            const errorElement = document.getElementById(field.name + 'Error');
+            if (errorElement) {
+                errorElement.textContent = message;
+                field.classList.add('error');
+            }
+        }
+
+        function clearFieldError(field) {
+            const errorElement = document.getElementById(field.name + 'Error');
+            if (errorElement) {
+                errorElement.textContent = '';
+                field.classList.remove('error');
+            }
+        }
+
+        function validateForm() {
+            const fields = feedbackForm.querySelectorAll('input, textarea');
+            let isValid = true;
+
+            fields.forEach(field => {
+                if (!validateField(field)) {
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        }
+
+        function setupFormSubmission() {
+            feedbackForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!validateForm()) {
+                    return;
+                }
+                submitForm();
+            });
+        }
+
+        function submitForm() {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            hideMessages();
+
+            const formData = new FormData(feedbackForm);
+            const data = {
+                name: formData.get('name').trim(),
+                email: formData.get('email').trim(),
+                rating: formData.get('rating'),
+                comments: formData.get('comments').trim(),
+                timestamp: new Date().toISOString()
+            };
+
+            // Simulate server delay
+            setTimeout(() => {
+                showSuccessMessage(data);
+                feedbackForm.reset();
+                resetStarRating();
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Feedback (Demo)';
+            }, 1000);
+        }
+
+        function showSuccessMessage(data) {
+            successMessage.style.display = 'block';
+            feedbackForm.style.display = 'none';
+            
+            // Show the submitted data
+            demoData.innerHTML = `
+                <strong>Submitted Data (Demo):</strong><br>
+                Name: ${data.name}<br>
+                Email: ${data.email}<br>
+                Rating: ${data.rating} stars<br>
+                Comments: ${data.comments}<br>
+                Timestamp: ${new Date(data.timestamp).toLocaleString()}
+            `;
+        }
+
+        function hideMessages() {
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+        }
+
+        function resetStarRating() {
+            const stars = document.querySelectorAll('.stars input[type="radio"]');
+            const ratingText = document.querySelector('.rating-text');
+            stars.forEach(star => star.checked = false);
+            ratingText.textContent = 'Click to rate';
+        }
+
+        function setupResetForm() {
+            resetFormBtn.addEventListener('click', function() {
+                feedbackForm.style.display = 'block';
+                successMessage.style.display = 'none';
+                feedbackForm.reset();
+                resetStarRating();
+                clearAllErrors();
+            });
+        }
+
+        function clearAllErrors() {
+            const errorElements = document.querySelectorAll('.error-message');
+            const errorFields = document.querySelectorAll('.error');
+            errorElements.forEach(el => el.textContent = '');
+            errorFields.forEach(field => field.classList.remove('error'));
+        }
+    </script>
+</body>
+</html>
